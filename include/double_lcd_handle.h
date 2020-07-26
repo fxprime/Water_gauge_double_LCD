@@ -13,6 +13,16 @@
 LiquidCrystal_I2C rt_disp(PCF8574_ADDR_A21_A11_A01, 4, 5, 6, 16, 11, 12, 13, 14, POSITIVE);
 LiquidCrystal_I2C sp_disp(PCF8574_ADDR_A21_A11_A00, 4, 5, 6, 16, 11, 12, 13, 14, POSITIVE);
 
+byte customBackslash[8] = {
+  0b00000,
+  0b10000,
+  0b01000,
+  0b00100,
+  0b00010,
+  0b00001,
+  0b00000,
+  0b00000
+};
 
 
 void Double_LCD_init() {
@@ -48,6 +58,8 @@ void Double_LCD_init() {
   sp_disp.print(F("          L     "));
  
   Serial.print("Double lcd inited\n"); 
+
+  rt_disp.createChar(7, customBackslash);
 }
 
 static inline void Realtime_disp_static_running() {
@@ -95,6 +107,7 @@ static inline void Realtime_disp_clear() {
     rt_disp.clear(); 
 }
 
+
 static inline void Double_LCD_update() {
 
             time_ms_t cur_time      = millis();
@@ -114,8 +127,14 @@ static inline void Double_LCD_update() {
         Setpoint_disp_static_waiting();
     }else if( last_state!=ST_RUNNING && State_get() == ST_RUNNING ) {
         Realtime_disp_static_running();
+        sp_disp.setCursor(3, 1);
+        sp_disp.print(_sp_liter);
+        sp_disp.write(LCD_SPACE_SYMBOL);
     }else if( last_state!=ST_DELAY && State_get() == ST_DELAY ) {
         last_st_delay = cur_time;
+        sp_disp.setCursor(3, 1);
+        sp_disp.print(_sp_liter);
+        sp_disp.write(LCD_SPACE_SYMBOL);
     }else if( last_state!=ST_CAL && State_get() == ST_CAL ) {
         Setpoint_disp_static_cal();
     }else if( last_state!=ST_CAL_SAVE && State_get() == ST_CAL_SAVE ) {
@@ -123,22 +142,88 @@ static inline void Double_LCD_update() {
         Setpoint_disp_clear();
         sp_disp.setCursor(0, 0);
         sp_disp.print( F("Parameters Saved!") );
+    }else if( last_state!=ST_STOP && State_get() == ST_STOP ) {
+        rt_disp.setCursor(15, 1);
+        rt_disp.print(" ");
     }
 
     /* -- If state is running, show current litter but constrain with setpoint -- */
 
     if      (State_get() == ST_WAIT_SP) {
-        sp_disp.setCursor(3, 1);
-        sp_disp.print(_sp_liter);
-        sp_disp.write(LCD_SPACE_SYMBOL);
+        bool manipulating = (buttons[BT_MINUS].read() == BT_ST_PRESSING|| buttons[BT_PLUS].read() == BT_ST_PRESSING);
+        static time_ms_t last_manipulating = 0;
+        if(manipulating) last_manipulating = cur_time;
+
+        if( (cur_time - last_manipulating) > 2000) {
+
+
+            if( (cur_time - last_manipulating)%1000 < 600) {
+                sp_disp.setCursor(3, 1);
+                sp_disp.print(_sp_liter);
+                sp_disp.write(LCD_SPACE_SYMBOL);
+            }else{
+                sp_disp.setCursor(3, 1);
+                sp_disp.print("      ");
+                sp_disp.write(LCD_SPACE_SYMBOL);
+            }
+
+        }else{
+            sp_disp.setCursor(3, 1);
+            sp_disp.print(_sp_liter);
+            sp_disp.write(LCD_SPACE_SYMBOL);
+        }
         rt_disp.setCursor(3, 1);
         rt_disp.print(Litter_trip_now());
         rt_disp.write(LCD_SPACE_SYMBOL);
-    }       
+    }        
     else if (State_get() == ST_RUNNING) { 
         rt_disp.setCursor(3, 1);
         rt_disp.print( min(Litter_now(), _sp_liter) );
         rt_disp.write(LCD_SPACE_SYMBOL);
+
+
+        char activity[] = "|/-A|/-A";
+        rt_disp.setCursor(15, 1);
+
+        if(activity[(cur_time%3000)/(3*125)] !='A')
+            rt_disp.print( activity[(cur_time%3000)/(3*125)] );
+        else{
+            rt_disp.write(byte(7)); //print our custom char backslash
+        }
+        
+        // if(cur_time%3000<3*125) {
+        //     rt_disp.setCursor(15, 1);
+        //     rt_disp.print("|");
+        // }else if(cur_time%3000<3*250) {
+        //     rt_disp.setCursor(15, 1);
+        //     rt_disp.print("/");
+
+        // }else if(cur_time%3000<3*375) {
+        //     rt_disp.setCursor(15, 1);
+        //     rt_disp.print("-");
+
+        // }else if(cur_time%3000<3*500) {
+        //     rt_disp.setCursor(15, 1);
+        //     rt_disp.write(0xa4);
+
+        // }else if(cur_time%3000<3*625) {
+        //     rt_disp.setCursor(15, 1);
+        //     rt_disp.print("|");
+
+        // }else if(cur_time%3000<3*750) {
+        //     rt_disp.setCursor(15, 1);
+        //     rt_disp.print("/");
+
+        // }else if(cur_time%3000<3*875) {
+        //     rt_disp.setCursor(15, 1);
+        //     rt_disp.print("-");
+
+        // }else {
+
+        //     rt_disp.setCursor(15, 1);
+        //     rt_disp.write(0xa4);
+        // }
+        
     }
 
     /* ------------- If state is delaying, blink and show count down ------------ */

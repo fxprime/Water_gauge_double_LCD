@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <EEPROMex.h>
+#include <Bounce2.h>
+
 
 
 /* -------------------------------------------------------------------------- */
@@ -13,6 +15,13 @@
 #define DELAY_BEFORE_RUN    3000        //Millisecond
 #define L_COMP_DEFAULT      1.0         //Compensate ratio default
 #define SP_L_DEFAULT        5.0         //Setpoint for leter default
+
+
+#define NUM_BUTTONS 4
+const uint8_t BUTTON_PINS[NUM_BUTTONS] = {5, 7, 9, 11};
+const uint8_t BUTTON_PINS_GND[NUM_BUTTONS] = {6, 8, 10, 12};
+
+
 /* -------------------------------------------------------------------------- */
 /*                                  Structuer                                 */
 /* -------------------------------------------------------------------------- */
@@ -32,6 +41,23 @@ typedef uint64_t time_us_t;
 
 
 
+ 
+enum
+{
+  BT_PLUS = 0,
+  BT_MINUS,
+  BT_START,
+  BT_CAL
+};
+
+enum
+{
+  BT_ST_PRESSING = 0,
+  BT_ST_UNPRESSED = 1
+};
+
+
+
 /* -------------------------------------------------------------------------- */
 /*                                  Variables                                 */
 /* -------------------------------------------------------------------------- */
@@ -40,6 +66,11 @@ typedef uint64_t time_us_t;
 
 state_en        _state;
 bool            _calibrate_flag;
+
+/* ----------------------------- Button variable ---------------------------- */
+
+Bounce *buttons = new Bounce[NUM_BUTTONS];
+
 
 /* ---------------------------- Setpoint variable --------------------------- */
 double          _sp_liter = SP_L_DEFAULT;

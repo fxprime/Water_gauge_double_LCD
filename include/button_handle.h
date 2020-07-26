@@ -1,30 +1,5 @@
 #include <Bounce2.h>
 
-#define NUM_BUTTONS 4
-const uint8_t BUTTON_PINS[NUM_BUTTONS] = {5, 7, 9, 11};
-const uint8_t BUTTON_PINS_GND[NUM_BUTTONS] = {6, 8, 10, 12};
-
-
-/* -------------------------------------------------------------------------- */
-/*                            Button symbol design                            */
-/* -------------------------------------------------------------------------- */
-
-enum
-{
-  BT_PLUS = 0,
-  BT_MINUS,
-  BT_START,
-  BT_CAL
-};
-
-enum
-{
-  BT_ST_PRESSING = 0,
-  BT_ST_UNPRESSED = 1
-};
-
-Bounce *buttons = new Bounce[NUM_BUTTONS];
-
 
 /* -------------------------------------------------------------------------- */
 /*               Initialize Button input pin and make it pullup               */
@@ -167,6 +142,16 @@ static inline void Button_states() {
       }else if(Water_is_full() && Calibrating()) {
         State_set(ST_CAL);
       }
+
+
+
+
+      if(buttons[BT_START].rose()) {
+        Flowmeter_reset();
+        // Liter_SP_reset();
+        State_set(ST_STOP);
+      }
+
       
       break;
     }

@@ -189,41 +189,7 @@ static inline void Double_LCD_update() {
             rt_disp.print( activity[(cur_time%3000)/(3*125)] );
         else{
             rt_disp.write(byte(7)); //print our custom char backslash
-        }
-        
-        // if(cur_time%3000<3*125) {
-        //     rt_disp.setCursor(15, 1);
-        //     rt_disp.print("|");
-        // }else if(cur_time%3000<3*250) {
-        //     rt_disp.setCursor(15, 1);
-        //     rt_disp.print("/");
-
-        // }else if(cur_time%3000<3*375) {
-        //     rt_disp.setCursor(15, 1);
-        //     rt_disp.print("-");
-
-        // }else if(cur_time%3000<3*500) {
-        //     rt_disp.setCursor(15, 1);
-        //     rt_disp.write(0xa4);
-
-        // }else if(cur_time%3000<3*625) {
-        //     rt_disp.setCursor(15, 1);
-        //     rt_disp.print("|");
-
-        // }else if(cur_time%3000<3*750) {
-        //     rt_disp.setCursor(15, 1);
-        //     rt_disp.print("/");
-
-        // }else if(cur_time%3000<3*875) {
-        //     rt_disp.setCursor(15, 1);
-        //     rt_disp.print("-");
-
-        // }else {
-
-        //     rt_disp.setCursor(15, 1);
-        //     rt_disp.write(0xa4);
-        // }
-        
+        } 
     }
 
     /* ------------- If state is delaying, blink and show count down ------------ */

@@ -8,7 +8,7 @@
 
 #define L_PER_PULSE         1.0/78.0    //Liter per a single pulse define by sensor
 #define L_PER_PRESS         0.25        //Liter per pressing button
-#define L_MAX               10          //Liter max
+#define L_MAX               50          //Liter max
 #define L_MIN               1           //Liter min
 #define DELAY_BEFORE_RUN    3000        //Millisecond
 #define L_COMP_DEFAULT      1.0         //Compensate ratio default
@@ -42,14 +42,14 @@ state_en        _state;
 bool            _calibrate_flag;
 
 /* ---------------------------- Setpoint variable --------------------------- */
-// int         _sp_accel = 0;
-double          _sp_liter = 0;
+double          _sp_liter = SP_L_DEFAULT;
 
 
 /* --------------------------- Flowmeter variable --------------------------- */
 
 volatile int    pulseCount        = 0;
 uint32_t        _pulse_now        = 0; 
+uint32_t        _pulse_trip       = 0;
 
 /* ---------------------- Calibration cutoff compensate --------------------- */
 
@@ -75,6 +75,9 @@ int _sp_liter_address      = 170;
 /* -------------------------------------------------------------------------- */
 static inline double Litter_now() {
     return _pulse_now*L_PER_PULSE*_cal_l_ratio_comp;;
+}
+static inline double Litter_trip_now() {
+    return _pulse_trip*L_PER_PULSE*_cal_l_ratio_comp;;
 }
 static inline void State_set(state_en st)
 {
@@ -110,34 +113,32 @@ static inline void Liter_SP_reset() {
 }
 static inline void Cal_cmp_ADD() {
     _cal_l_ratio_comp += 0.005;
-    _cal_l_ratio_comp = constrain(_cal_l_ratio_comp, 0.02, 10.0);
+    _cal_l_ratio_comp = constrain(_cal_l_ratio_comp, 0.1, 10.0);
 
 }
 static inline void Cal_cmp_MINUS() {
     _cal_l_ratio_comp -= 0.005;
-    _cal_l_ratio_comp = constrain(_cal_l_ratio_comp, 0.02, 10.0);
+    _cal_l_ratio_comp = constrain(_cal_l_ratio_comp, 0.1, 10.0);
 
 }
 static inline void Cal_cmp_DEFAULT() {
-    _cal_l_ratio_comp = 1.0;
+    _cal_l_ratio_comp = L_COMP_DEFAULT;
 }
-static inline void SaveParameters() {
-    double value_test;
-    EEPROM.updateDouble(_cal_l_ratio_address, _cal_l_ratio_comp);   
-    value_test = EEPROM.readDouble(_cal_l_ratio_address);
-    if( fabs(_cal_l_ratio_comp - value_test) < __DBL_EPSILON__ ) {
-        Serial.println("Write OK");
-    }else {
-        Serial.println("Write Failed!!");
-    }
 
-    EEPROM.updateDouble(_sp_liter_address, _sp_liter);   
-    value_test = EEPROM.readDouble(_sp_liter_address);
-    if( fabs(_sp_liter - value_test) < __DBL_EPSILON__ ) {
+
+static inline bool UpdateDoubleParam(const int& adds, double& val) {
+    double value_test;
+    EEPROM.updateDouble(adds, val);   
+    value_test = EEPROM.readDouble(adds);
+    if( fabs(val - value_test) < __DBL_EPSILON__ ) {
         Serial.println("Write OK");
     }else {
         Serial.println("Write Failed!!");
     }
+}
+static inline void SaveParameters() { 
+    UpdateDoubleParam(_cal_l_ratio_address, _cal_l_ratio_comp);
+    UpdateDoubleParam(_sp_liter_address, _sp_liter);
 }
 
 void Parameters_init() {
@@ -152,16 +153,24 @@ void Parameters_init() {
     delay(100);
  
 
-    int test_signature          = 0;
+    int test_signature;
     test_signature              = EEPROM.readInt(_signature_address);
+
+
+
 
     if(test_signature == eeprom_signature) {
         _cal_l_ratio_comp   = EEPROM.readDouble(_cal_l_ratio_address);
         _sp_liter           = EEPROM.readDouble(_sp_liter_address);
+        if(isnan(_cal_l_ratio_comp))    { _cal_l_ratio_comp     = L_COMP_DEFAULT;};
+        if(isnan(_sp_liter))            { _sp_liter             = SP_L_DEFAULT;};
+        _cal_l_ratio_comp   = constrain(_cal_l_ratio_comp   , 0.1, 10.0);
+        _sp_liter           = constrain(_sp_liter           , L_MIN, L_MAX);
         Serial.println("Found old parameter : \n\tcal_comp : " + String(_cal_l_ratio_comp,3) + "\n\tSP : " + String(_sp_liter,2));
     }else{
-        EEPROM.writeInt     (_signature_address, eeprom_signature);
-        EEPROM.writeDouble  (_cal_l_ratio_address, _cal_l_ratio_comp);
+        EEPROM.writeInt     (_signature_address     , eeprom_signature);
+        EEPROM.writeDouble  (_cal_l_ratio_address   , L_COMP_DEFAULT);
+        EEPROM.writeDouble  (_sp_liter_address      , SP_L_DEFAULT);
         Serial.println("Not found old parameter. Using default.");
     }
 

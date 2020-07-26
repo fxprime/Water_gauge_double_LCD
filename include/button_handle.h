@@ -130,9 +130,9 @@ static inline void Button_states() {
 
       /* -- Go next if setpoint is set more than threshold and button start press - */
       if(buttons[BT_START].rose() && Liter_SP_is_enough()) {
+        SaveParameters();
         State_set(ST_DELAY);
         last_delay_ts = cur_time;
-
       }
 
 
@@ -181,7 +181,7 @@ static inline void Button_states() {
 
       if(buttons[BT_START].rose()) {
         Flowmeter_reset();
-        Liter_SP_reset();
+        // Liter_SP_reset();
         State_set(ST_WAIT_SP);
       }
 
@@ -257,13 +257,13 @@ static inline void Button_states() {
 
       if(buttons[BT_START].rose()) {
         Flowmeter_reset();
-        Liter_SP_reset();
+        // Liter_SP_reset();
         State_set(ST_CAL_SAVE);
         SaveParameters();
         last_delay_ts = cur_time;
       }else if(buttons[BT_CAL].rose()) {
         Flowmeter_reset();
-        Liter_SP_reset();
+        // Liter_SP_reset();
         State_set(ST_WAIT_SP);
       }
 

@@ -33,7 +33,6 @@ void loop()
   Button_update();
   Button_states();
 
-
   static time_ms_t last_10hz = millis();
   if( cur_time - last_10hz > 100 ) {
     last_10hz = cur_time;

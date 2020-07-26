@@ -42,8 +42,9 @@ static inline void Flowmeter_update() {
 
 static inline void Flowmeter_reset() {
   // Serial.println("Reset Flowmeter.");
-  pulseCount    = 0;
-  _pulse_now    = 0; 
+  _pulse_trip   +=  _pulse_now;
+  pulseCount    =   0;
+  _pulse_now    =   0; 
 }
 
 static inline void Flowmeter_keep_reset() {

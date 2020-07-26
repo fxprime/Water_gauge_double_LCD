@@ -68,9 +68,9 @@ static inline void Realtime_disp_static_delay(int countdown) {
 
 static inline void Realtime_disp_static_waiting() {
     rt_disp.setCursor(0, 0);                 //set 1-st colum & 2-nd row, 1-st colum & row started at zero
-    rt_disp.print(F("<-- Wait"));
+    rt_disp.print(F("Litter Trip :"));
     rt_disp.setCursor(0, 1);
-    rt_disp.print(F("    Setpoint"));
+    rt_disp.print(F("          L     "));
 }
 
 static inline void Setpoint_disp_static_waiting() {
@@ -131,6 +131,9 @@ static inline void Double_LCD_update() {
         sp_disp.setCursor(3, 1);
         sp_disp.print(_sp_liter);
         sp_disp.write(LCD_SPACE_SYMBOL);
+        rt_disp.setCursor(3, 1);
+        rt_disp.print(Litter_trip_now());
+        rt_disp.write(LCD_SPACE_SYMBOL);
     }       
     else if (State_get() == ST_RUNNING) { 
         rt_disp.setCursor(3, 1);

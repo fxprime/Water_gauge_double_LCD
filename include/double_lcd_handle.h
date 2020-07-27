@@ -208,7 +208,7 @@ static inline void Double_LCD_update() {
         rt_disp.write(LCD_SPACE_SYMBOL);
 
         sp_disp.setCursor(3, 1);
-        sp_disp.print( _cal_l_ratio_comp );
+        sp_disp.print( _cal_l_ratio_comp, 3 );
         sp_disp.write(LCD_SPACE_SYMBOL);
     }
  

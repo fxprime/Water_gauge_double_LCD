@@ -1,16 +1,24 @@
 
-#include "Arduino.h"
-const byte      flowsensorIntPin  = 2;
-
-
-
+#include "Arduino.h" 
+const       byte      flowsensorIntPin  = 2;
+const       time_us_t DEBOUNCE_TIME     = 1500;
+volatile    time_us_t _last_fall        = 0; 
+ 
 /* -------------------------------------------------------------------------- */
 /*                       Count the pulse using interrupt                      */
 /* -------------------------------------------------------------------------- */
 
 void interruptFunc()
 {
-  pulseCount++;
+  time_us_t cur_time = micros();
+  if(cur_time-_last_fall>DEBOUNCE_TIME) {
+    _last_fall = cur_time;
+    pulseCount++;
+  }
+  // 
+  
+
+
 }
 
 

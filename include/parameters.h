@@ -7,8 +7,8 @@
 /* -------------------------------------------------------------------------- */
 /*                              Constant variable                             */
 /* -------------------------------------------------------------------------- */
-
-#define L_PER_PULSE         1.0/78.0    //Liter per a single pulse define by sensor
+#define FLOWMETER_PPL       100.0       //Flowmeter spec
+#define L_PER_PULSE         1.0/FLOWMETER_PPL    //Liter per a single pulse define by sensor
 #define L_PER_PRESS         0.25        //Liter per pressing button
 #define L_MAX               50          //Liter max
 #define L_MIN               1           //Liter min
@@ -143,12 +143,12 @@ static inline void Liter_SP_reset() {
     _sp_liter = 0;
 }
 static inline void Cal_cmp_ADD() {
-    _cal_l_ratio_comp += 0.005;
+    _cal_l_ratio_comp *= (1+0.01/Litter_now());
     _cal_l_ratio_comp = constrain(_cal_l_ratio_comp, 0.1, 10.0);
 
 }
 static inline void Cal_cmp_MINUS() {
-    _cal_l_ratio_comp -= 0.005;
+    _cal_l_ratio_comp *= (1-0.01/Litter_now());
     _cal_l_ratio_comp = constrain(_cal_l_ratio_comp, 0.1, 10.0);
 
 }
